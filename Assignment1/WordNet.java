@@ -69,9 +69,31 @@ public class WordNet {
         g.printAdjacencyList(g.adj);
     }
 
+    /**
+     * This method is only used to connect synsets.As synsets contain both integers
+     * and strings, we are passing generic of String type into graph.
+     */
+    public void addConnectionsToSynsets(String fileName) throws IOException {
+        ArrayList<String[]> list = parseHypernyms(fileName);
+        Graph<String> g = new Graph(list.size());
+        for (int i = 0; i < list.size(); i++) {
+            if (list.get(i).length == 1) {
+                g.addEdge(Integer.parseInt(list.get(i)[0]), null);
+            }
+            if (list.get(i).length == 2) {
+                g.addEdge(Integer.parseInt(list.get(i)[0]), list.get(i)[1]);
+            } else {
+                for (int j = 1; j < list.get(i).length; j++) {
+                    g.addEdge(Integer.parseInt(list.get(i)[0]), j + ")" + list.get(i)[j]);
+                }
+            }
+        }
+        g.printAdjacencyList(g.adj);
+    }
+
     public static void main(String[] args) throws IOException {
         WordNet w = new WordNet();
-        w.addConnectionsToHypernyms("synsets15.txt");
+        w.addConnectionsToSynsets("synsets100-subgraph.txt");
 
     }
 }
