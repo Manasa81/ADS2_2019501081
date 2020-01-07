@@ -2,6 +2,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 
 /**
@@ -9,19 +10,22 @@ import java.util.Arrays;
  */
 public class WordNet {
 
-    private String[] parseSynsets(String fileName) throws IOException {
+    private ArrayList<String[]> parseSynsets(String fileName) throws IOException {
         File file = new File("C:\\Users\\Manasa\\Documents\\New folder\\ADS2_2019501081\\Assignment1\\" + fileName);
         BufferedReader br = new BufferedReader(new FileReader(file));
-        String[] words;
-        StringBuilder text = new StringBuilder();
+        ArrayList<String[]> list = new ArrayList<String[]>();
+        String[] words = null;
         String line = br.readLine();
         while (line != null) {
-            text.append(line).append(" ");
+            words = null;
+            line = line.trim();
+            words = line.split(",");
             line = br.readLine();
+            list.add(words);
         }
         br.close();
-        words = text.toString().split(" ");
-        return words;
+        System.out.println(Arrays.toString(list.get(33)));
+        return list;
     }
 
     private String[] parseHypernyms(String fileName) throws IOException {
@@ -29,19 +33,23 @@ public class WordNet {
         BufferedReader br = new BufferedReader(new FileReader(file));
         StringBuilder text = new StringBuilder();
         String line = br.readLine();
-
+        String[] words = null;
+        ArrayList<String[]> list = new ArrayList<String[]>();
         while (line != null) {
-            text.append(line).append(" ");
+            words = null;
+            line = line.trim();
+            words = line.split(",");
             line = br.readLine();
+            list.add(words);
         }
-        String[] words = text.toString().split(" ");
-        System.out.println(words[0]);
+        br.close();
+        System.out.println(Arrays.toString(list.get(34)));
         return words;
     }
 
     public static void main(String[] args) throws IOException {
         WordNet w = new WordNet();
-        w.parseSynsets("synsets11.txt");
-        w.parseHypernyms("hypernyms100-subgraph.txt");
+        w.parseSynsets("synsets.txt");
+        w.parseHypernyms("hypernyms1000-subgraph.txt");
     }
 }
