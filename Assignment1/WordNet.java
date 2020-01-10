@@ -24,7 +24,7 @@ public class WordNet {
             list.add(words);
         }
         br.close();
-        // System.out.println(Arrays.toString(list.get(33)));
+        System.out.println(Arrays.toString(list.get(34)));
         return list;
     }
 
@@ -93,7 +93,8 @@ public class WordNet {
 
     public static void main(String[] args) throws IOException {
         WordNet w = new WordNet();
-        w.addConnectionsToSynsets("synsets100-subgraph.txt");
+        w.parseSynsets("synsets.txt");
+        // w.addConnectionsToSynsets("synsets100-subgraph.txt");
 
     }
 }

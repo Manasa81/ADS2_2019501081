@@ -38,4 +38,8 @@ public class Graph<E> {
         g.printAdjacencyList(g.adj);
     }
 
+    public int V() {
+        return 0;
+    }
+
 }
