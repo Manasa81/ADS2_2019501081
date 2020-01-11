@@ -52,7 +52,7 @@ public class WordNet {
                 }
             }
         }
-        System.out.println(hashWithNounKey.get("AB"));
+        // System.out.println(hashWithNounKey.get("AB"));
         return hashWithNounKey;
     }
 
@@ -155,6 +155,7 @@ public class WordNet {
         if (!hashWithNounKey.containsKey(nounA) || (!hashWithNounKey.containsKey(nounB))) {
             return null;
         } else {
+            System.out.println(hashWithNounKey.get(nounA) + "  " + hashWithNounKey.get(nounB));
             int ancestor = sap.ancestor(hashWithNounKey.get(nounA), hashWithNounKey.get(nounB));
             return hashWithIdKey.get(ancestor)[0];
 
@@ -163,12 +164,12 @@ public class WordNet {
     }
 
     // do unit testing of this class
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) throws IOException, InterruptedException {
         WordNet w = new WordNet("synsets.txt", "hypernyms.txt");
         w.addConnectionsToHypernyms();
         w.keyNoun(w.slist);
-        System.out.println(Arrays.toString(w.hashWithIdKey.get(34)));
+        // System.out.println(Arrays.toString(w.hashWithIdKey.get(34)));
 
-        // System.out.println(w.distance("AIDS", "manasa"));
+        System.out.println(w.distance("calcium_ion", "casein"));
     }
 }
