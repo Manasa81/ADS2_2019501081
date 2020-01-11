@@ -73,11 +73,15 @@ public class Solution {
     }
 
     public void inDegree() {
-        HashMap<Integer, Integer> in = new HashMap<>();
-        TreeMap<Integer, Integer> sortedIn = new TreeMap<>(Collections.reverseOrder());
-        for (int i : logsMap.keySet()) {
-            if (!in.containsKey(i)) {
-                in.put(g.indegree(i), i);
+        HashMap<Integer, ArrayList<Integer>> in = new HashMap<>();
+        TreeMap<Integer, ArrayList<Integer>> sortedIn = new TreeMap<>(Collections.reverseOrder());
+        for (int i : emailMap.keySet()) {
+            if (!in.containsKey(g.indegree(i))) {
+                ArrayList<Integer> values = new ArrayList<>();
+                values.add(i);
+                in.put(g.indegree(i), values);
+            } else {
+                in.get(g.indegree(i)).add(i);
             }
 
         }
@@ -85,8 +89,8 @@ public class Solution {
         sortedIn.putAll(in);
         for (int i = 0; i < 10; i++) {
             int key = (int) sortedIn.keySet().toArray()[i];
-            int value = sortedIn.get(key);
-            System.out.println(emailMap.get(value) + "," + key);
+            ArrayList<Integer> value = sortedIn.get(key);
+            System.out.println(emailMap.get(value.get(0)) + "," + key);
         }
         return;
 
