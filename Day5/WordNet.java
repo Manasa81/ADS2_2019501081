@@ -1,34 +1,68 @@
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import edu.princeton.cs.algs4.Digraph;
-import java.util.HashSet;
+import edu.princeton.cs.algs4.In;
 
+/**
+ * . Wordnet
+ * Took reference from bob sedgewick SAP implementation class.
+ */
 public class WordNet {
-    ArrayList<String[]> slist;
-    ArrayList<String[]> hlist;
-    HashMap<String, ArrayList<Integer>> hashWithNounKey = new HashMap<>();
-    HashMap<Integer, String[]> hashWithIdKey = new HashMap<>();
-    Digraph g;
-    SAP sap;
+    /**
+     * . synstes list
+     */
+    private ArrayList<String[]> slist;
+    /**
+     * . synstes list
+     */
+    private ArrayList<String[]> hlist;
+    /**
+     * . synstes list
+     */
+    private HashMap<String, ArrayList<Integer>> hashWithNounKey
+    = new HashMap<>();
+    /**
+     * . synstes list
+     */
+    private HashMap<Integer, String[]> hashWithIdKey = new HashMap<>();
+    /**
+     * . synstes list
+     */
+    private Digraph g;
+    /**
+     * . synstes list
+     */
+    private SAP sap;
 
-    public WordNet(String synsets, String hypernyms) throws IOException {
+    /**
+     *
+     * @param synsets   file name
+     * @param hypernyms file name
+     */
+    public WordNet(final String synsets, final String hypernyms) {
         slist = parseSynsets(synsets);
         g = new Digraph(slist.size());
-        sap = new SAP(g);
+        // sap = new SAP(g);
         hlist = parseHypernyms(hypernyms);
         addConnectionsToHypernyms();
+        sap = new SAP(g);
+
         hashWithNounKey = keyNoun(slist);
+
+
     }
 
-    private HashMap<String, ArrayList<Integer>> keyNoun(ArrayList<String[]> slist) {
-        for (int i = 0; i < slist.size(); i++) {
-            String[] nouns = slist.get(i)[1].split(" ");
-            int v = Integer.parseInt(slist.get(i)[0]);
+    /**
+     *
+     * @param slist1 synsets lists
+     * @return hashmap
+     */
+    private HashMap<String, ArrayList<Integer>>
+    keyNoun(final ArrayList<String[]> slist1) {
+        for (int i = 0; i < slist1.size(); i++) {
+            String[] nouns = slist1.get(i)[1].split(" ");
+            int v = Integer.parseInt(slist1.get(i)[0]);
             if (nouns.length == 1) {
                 if (!hashWithNounKey.containsKey(nouns[0])) {
                     ArrayList<Integer> values = new ArrayList<>();
@@ -55,72 +89,83 @@ public class WordNet {
         return hashWithNounKey;
     }
 
-    private ArrayList<String[]> parseSynsets(String fileName) throws IOException {
-        File file = new File("C:\\Users\\Manasa\\Documents\\New folder\\ADS2_2019501081\\Assignment1\\" + fileName);
-        BufferedReader br = new BufferedReader(new FileReader(file));
+    /**
+     *
+     * @param fileName file
+     * @return list
+     */
+    private ArrayList<String[]> parseSynsets(final String fileName) {
+        In in = new In(fileName);
+        int count = 0;
         ArrayList<String[]> list = new ArrayList<String[]>();
         String[] words = null;
-        String line = br.readLine();
-        while (line != null) {
+        String line = "";
+        while (!in.isEmpty()) {
+            line = in.readLine();
             words = null;
             line = line.trim();
             words = line.split(",");
+            if (words.length < 2) {
+                throw new java.lang.IllegalArgumentException("less" + "number of lines");
+            }
             int id = Integer.parseInt(words[0]);
             String[] nouns = words[1].split(" ");
             if (!hashWithIdKey.containsKey(id)) {
                 hashWithIdKey.put(id, nouns);
             }
-            line = br.readLine();
             list.add(words);
         }
-        br.close();
-        // System.out.println(Arrays.toString(list.get(10)));
         return list;
     }
 
-    private ArrayList<String[]> parseHypernyms(String fileName) throws IOException {
-        File file = new File("C:\\Users\\Manasa\\Documents\\New folder\\ADS2_2019501081\\Assignment1\\" + fileName);
-        BufferedReader br = new BufferedReader(new FileReader(file));
-        StringBuilder text = new StringBuilder();
-        String line = br.readLine();
+    /**
+     *
+     * @param fileName file
+     * @return list of hypernyms
+     */
+    private ArrayList<String[]> parseHypernyms(final String fileName) {
+        In in = new In(fileName);
+        String line = "";
         String[] words = null;
         ArrayList<String[]> list = new ArrayList<String[]>();
-        while (line != null) {
+        while (!in.isEmpty()) {
+            line = in.readLine();
+            if (line.equals(null)) {
+                throw new java.lang.IllegalArgumentException("no enough lines");
+            }
             words = null;
             line = line.trim();
             words = line.split(",");
-            line = br.readLine();
             list.add(words);
         }
-        br.close();
-        // System.out.println(Arrays.toString(list.get(34)));
         return list;
     }
 
-    private void addConnectionsToHypernyms() throws IOException {
+    /**
+     *
+     */
+    private void addConnectionsToHypernyms() {
         int count = 0;
-        System.out.println(hlist.size());
-
-        // System.out.println(Arrays.toString(hlist.size());
         for (int i = 0; i < hlist.size(); i++) {
-            // if (hlist.get(i).length == 1) {
-            // g.addEdge(Integer.parseInt(hlist.get(i)[0]), null);
-            // count++;
-            // }
             if (hlist.get(i).length == 2) {
-                g.addEdge(Integer.parseInt(hlist.get(i)[0]), Integer.parseInt(hlist.get(i)[1]));
+                g.addEdge(Integer.parseInt(hlist.get(i)[0]),
+                Integer.parseInt(hlist.get(i)[1]));
                 count++;
             } else if (hlist.get(i).length > 2) {
                 for (int j = 1; j < hlist.get(i).length; j++) {
-                    g.addEdge(Integer.parseInt(hlist.get(i)[0]), Integer.parseInt(hlist.get(i)[j]));
+                    g.addEdge(Integer.parseInt(hlist.get(i)[0]),
+                    Integer.parseInt(hlist.get(i)[j]));
                     count++;
                 }
             }
         }
-        // g.printAdjacencyList(g.adj);
     }
 
-    // returns all WordNet nouns
+    /**
+     * . iterable
+     *
+     * @return nouns
+     */
     public Iterable<String> nouns() {
         ArrayList<String> nouns = new ArrayList<>();
         for (String str : hashWithNounKey.keySet()) {
@@ -129,23 +174,34 @@ public class WordNet {
         return nouns;
     }
 
-    // // is the word a WordNet noun?
-    public boolean isNoun(String word) {
-        if (hashWithNounKey.containsKey(word)) {
-            return true;
-        } else {
-            return false;
-        }
+    /**
+     *
+     * @param word noun
+     * @return true/false
+     */
+    public boolean isNoun(final String word) {
+        return hashWithNounKey.containsKey(word);
 
     }
 
-    // distance between nounA and nounB (defined below)
-    public int distance(String nounA, String nounB) throws InterruptedException {
+    /**
+     *
+     * @param nounA noun
+     * @param nounB moun
+     * @return distance between nounA and nounB (defined below)
+     */
+    public int distance(final String nounA, final String nounB) {
         // System.out.println(nounA + " " + nounB);
-        if (!hashWithNounKey.containsKey(nounA) || (!hashWithNounKey.containsKey(nounB))) {
-            return -1;
+        if (!isNoun(nounA) || !isNoun(nounB)) {
+            throw new java.lang.IllegalArgumentException("no noun");
         } else {
-            return sap.length(hashWithNounKey.get(nounA), hashWithNounKey.get(nounB));
+            ArrayList<Integer> v = hashWithNounKey.get(nounA);
+            ArrayList<Integer> w = hashWithNounKey.get(nounB);
+            if (v == null || w == null) {
+                throw new java.lang.IllegalArgumentException(
+                    "illegal argument");
+            }
+            return sap.length(v, w);
         }
     }
 
@@ -153,26 +209,34 @@ public class WordNet {
     // // nounA
     // // and nounB
     // // in a shortest ancestral path (defined below)
-    public String sap(String nounA, String nounB) throws InterruptedException {
-        if (!hashWithNounKey.containsKey(nounA) || (!hashWithNounKey.containsKey(nounB))) {
-            return null;
+    /**
+     *
+     * @param nounA word
+     * @param nounB word
+     * @return a synset (second field of synsets.txt) that is common ancestor
+     *         of nounA and nounB
+     */
+    public String sap(final String nounA, final String nounB) {
+        if (!isNoun(nounA) || !isNoun(nounB)) {
+            throw new java.lang.IllegalArgumentException("no noun");
         } else {
-            // System.out.println(hashWithNounKey.get(nounA) + " " +
-            // hashWithNounKey.get(nounB));
-            int ancestor = sap.ancestor(hashWithNounKey.get(nounA), hashWithNounKey.get(nounB));
+            int ancestor = sap.ancestor(hashWithNounKey.get(nounA),
+             hashWithNounKey.get(nounB));
             return hashWithIdKey.get(ancestor)[0];
 
         }
 
     }
 
-    // do unit testing of this class
-    public static void main(String[] args) throws IOException, InterruptedException {
-        WordNet w = new WordNet("synsets.txt", "hypernyms.txt");
-        w.addConnectionsToHypernyms();
-        w.keyNoun(w.slist);
-        // System.out.println(Arrays.toString(w.hashWithIdKey.get(34)));
-        System.out.println(w.isNoun("zebra"));
-        System.out.println(w.distance("horse", "table"));
+    /**
+     *
+     * @param args rges
+     */
+    public static void main(final String[] args) {
+        // WordNet w = new WordNet("C:\\Users\\Manasa\\Documents\\New folder\\ADS2_2019501081\\Assignment1\\synsets.txt",
+        //         "C:\\Users\\Manasa\\Documents\\New folder\\ADS2_2019501081\\Assignment1\\hypernyms.txt");
+        // // System.out.println(Arrays.toString(w.hashWithIdKey.get(34)));
+        // System.out.println(w.isNoun("zebra"));
+        // System.out.println(w.distance("Cattell","panetela"));
     }
 }
