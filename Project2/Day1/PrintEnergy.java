@@ -27,6 +27,6 @@ public class PrintEnergy {
                 StdOut.printf("%9.0f ", sc.energy(col, row));
             StdOut.println();
         }
-    }
+    }   
 
 }
