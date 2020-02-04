@@ -23,15 +23,15 @@ public class SeamCarver {
 
    // width of current picture
     public int width() {
-        return pic.width();
+        return pc.width();
    }
 
-   // height of current picture
+   // height of current pcture
     public int height() {
-        return pic.height();
+        return pc.height();
     }
 
-    private double energy(int i, int j) {
+    public double energy(int i, int j) {
         int h = height() - 1;
         int w = width() - 1;
         if (i > w || j < 0 || j > h || j < 0) {
@@ -109,27 +109,27 @@ public class SeamCarver {
     }
 
     // find the minimum vertical path
-    private int[] minVerticalPath(double[][] initEnergies) {
-        int h = initEnergies.length;
-        int w = initEnergies[0].length;
+    private int[] minVerticalPath(double[][] iE) {
+        int h = iE.length;
+        int w = iE[0].length;
         int minPath[] = new int[h];
-        topologicalOrder(initEnergies);
+        topologicalOrder(iE);
 
         // as we are finding the shortest path from the bottom, find the minimum element
         // in the last row
         minPath[h - 1] = 0;
         for (int i = 0; i < w; i++) {
-            if (initEnergies[h - 1][i] < initEnergies[h - 1][minPath[h - 1]]) {
+            if (iE[h - 1][i] < iE[h - 1][minPath[h - 1]]) {
                 minPath[h - 1] = i;
             }
         }
         for (int row = h - 2; row >= 0; row--) {
             int column = minPath[row + 1];
             minPath[row] = column;
-            if (column > 0 && initEnergies[row][column - 1] < initEnergies[row][minPath[row]]) {
+            if (column > 0 && iE[row][column - 1] < iE[row][minPath[row]]) {
                 minPath[row] = column - 1;
             }
-            if (column < (w - 2) && initEnergies[row][column + 1] < initEnergies[row][minPath[row]]) {
+            if (column < (w - 2) && iE[row][column + 1] < iE[row][minPath[row]]) {
                 minPath[row] = column + 1;
             }
         }
@@ -158,13 +158,13 @@ public class SeamCarver {
         Picture p = new Picture(width(), height() - 1);
         for (int wid = 0; wid < width(); wid++) {
             for (int hei = 0; hei < seam[wid]; hei++) {
-                p.set(wid, hei, pic.get(wid, hei));
+                p.set(wid, hei, pc.get(wid, hei));
             }
             for (int hei = seam[wid] + 1; hei < height(); hei++) {
-                p.set(wid, hei - 1, pic.get(wid, hei));
+                p.set(wid, hei - 1, pc.get(wid, hei));
             }
         }
-        pic = p;
+        pc = p;
     }
 
     // remove vertical seam from current picture
