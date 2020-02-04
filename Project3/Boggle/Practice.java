@@ -16,6 +16,7 @@ public class Practice {
         System.out.println(source);
         while (!stack.isEmpty()) {
             x = stack.pop();
+
             for (i = 0; i < matrix.length; i++) {
                 if (matrix[x - 1][i] == 1 && visited[i] == false) {
                     stack.push(x);
