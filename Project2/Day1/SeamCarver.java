@@ -3,8 +3,8 @@ import edu.princeton.cs.algs4.Picture;
 import edu.princeton.cs.algs4.StdOut;
 
 public class SeamCarver {
-    private Picture picture;
-    double[][] energy;
+    private Picture pc;
+    private double border = 1000;
 
 
     // create a seam carver object based on the given picture
@@ -12,109 +12,198 @@ public class SeamCarver {
         if (picture == null) {
             throw new java.lang.IllegalArgumentException("picture is null");
         }
-        energy = new double[picture.width()][picture.height()];
-        energy(picture);
-        updateEnergies(energy);
-        this.picture = picture;
+
+        this.pc = new Picture(picture);
    }
 
    // current picture
     public Picture picture() {
-        return this.picture;
+        return this.pc;
    }
 
    // width of current picture
     public int width() {
-        return picture.width();
+        return pic.width();
    }
 
    // height of current picture
     public int height() {
-        return picture.height();
-   }
+        return pic.height();
+    }
 
-   // energy of pixel at column x and row y
-    public void energy(Picture picture) {
-        for (int x = 0; x < picture.width(); x++) {
-            for (int y = 0; y < picture.height(); y++) {
-                if (x == 0 || y == 0 || x == picture.width() - 1 || y == picture.height() - 1) {
-                    energy[x][y] = 1000;
-                } else {
-                    Color c = picture.get(x - 1, y);
-                    int r1 = c.getRed();
-                    int g1 = c.getGreen();
-                    int b1 = c.getBlue();
-                    Color c1 = picture.get(x + 1, y);
-                    int r2 = c1.getRed();
-                    int g2 = c1.getGreen();
-                    int b2 = c1.getBlue();
-                    Color c2 = picture.get(x, y - 1);
-                    int r3 = c2.getRed();
-                    int g3 = c2.getGreen();
-                    int b3 = c2.getBlue();
-                    Color c3 = picture.get(x, y + 1);
-                    int r4 = c3.getRed();
-                    int g4 = c3.getGreen();
-                    int b4 = c3.getBlue();
+    private double energy(int i, int j) {
+        int h = height() - 1;
+        int w = width() - 1;
+        if (i > w || j < 0 || j > h || j < 0) {
+            throw new java.lang.IllegalArgumentException();
+        }
+        if (i == 0 || i == w || j == 0 || j == h) {
+            return border;
+        }
+        return energyWithoutBorder(i, j);
+    }
 
-                    int xG = (r2 - r1) * (r2 - r1) + (g2 - g1) * (g2 - g1) + (b2 - b1) * (b2 - b1);
-                    int yG = (r3 - r4) * (r3 - r4) + (g3 - g4) * (g3 - g4) + (b3 - b4) * (b3 - b4);
-                    double ene = Math.sqrt(xG + yG);
-                    energy[x][y] = ene;
+    private double energyWithoutBorder(int x, int y) {
+        Color c = pc.get(x - 1, y);
+        Color c1 = pc.get(x + 1, y);
+        Color c2 = pc.get(x, y - 1);
+        Color c3 = pc.get(x, y + 1);
+        return Math.sqrt(gradient(c, c1) + gradient(c2, c3));
+    }
 
-                }
+    private double gradient(Color x, Color y) {
+        double r = x.getRed() - y.getRed();
+        double g = x.getGreen() - y.getGreen();
+        double b = x.getBlue() - y.getBlue();
+        return r * r + g * g + b * b;
+    }
+
+    private double[][] transpose(double[][] iE) {
+        int h = height();
+        int w = width();
+        double[][] tE = new double[w][h];
+        for (int i = 0; i < h; i++) {
+            for (int j = 0; j < w; j++) {
+                tE[j][i] = iE[i][j];
             }
         }
+        return tE;
+    }
+
+    public int[] findHorizontalSeam() {
+        double[][] transEnergies = transpose(initialEnergies());
+        return minVerticalPath(transEnergies);
 
     }
 
-    public double energy(int x, int y) {
-        return energy[x][y];
-    }
-
-    public double[][] updateEnergies(double[][] e) {
-        double[][] updatedArr = new double[e.length][e[0].length];
-        for (int i = 0; i < e.length; i++) {
-            for (int j = 0; j < e[0].length; j++) {
-                if (i == 0) {
-                    updatedArr[0][j] = e[0][j];
-                } else {
-                    if (j == 0) {
-                        updatedArr[i][j] = Math.min(e[i][j] + updatedArr[i - 1][j], e[i][j] + updatedArr[i - 1][j + 1]);
-                    } else if (j == e[0].length - 1) {
-                        updatedArr[i][j] = Math.min(e[i][j] + updatedArr[i - 1][j], e[i][j] + updatedArr[i - 1][j - 1]);
-                    } else {
-                        updatedArr[i][j] = Math.min(e[i][j] + updatedArr[i - 1][j],
-                                Math.min(e[i][j] + updatedArr[i - 1][j + 1], e[i][j] + updatedArr[i - 1][j - 1]));
-                    }
-                }
+    // store initial energies
+    private double[][] initialEnergies() {
+        double[][] iE = new double[height()][width()];
+        for (int i = 0; i < height(); i++) {
+            for (int j = 0; j < width(); j++) {
+                iE[i][j] = energy(j, i);
             }
-
         }
-        for (int row = 0; row < e.length; row++) {
-            for (int col = 0; col < e[0].length; col++)
-                StdOut.printf("%9.0f ", updatedArr[row][col]);
-            StdOut.println();
-        }
-        return updatedArr;
+        return iE;
     }
-    // private int[]
 
-   // sequence of indices for horizontal seam
-//    public int[] findHorizontalSeam(){}
+    // find the topological sort, add the minimum energies from top to bottom
+    private void topologicalOrder(double[][] iE) {
+        int hei = iE.length;
+        int wid = iE[0].length;
+        for (int row = 1; row < hei; row++) {
+            for (int column = 0; column < wid; column++) {
+                double tempEnergy = iE[row - 1][column];
+                double minimum = 0;
+                if (column == 0) {
+                    minimum = tempEnergy;
+                } else {
+                    minimum = Math.min(tempEnergy, iE[row - 1][column - 1]);
+                }
+                if (column != (wid - 1)) {
+                    minimum = Math.min(minimum, iE[row - 1][column + 1]);
+                }
+                iE[row][column] += minimum;
+            }
+        }
+    }
 
-//    // sequence of indices for vertical seam
-//    public int[] findVerticalSeam(){}
+    // find the minimum vertical path
+    private int[] minVerticalPath(double[][] initEnergies) {
+        int h = initEnergies.length;
+        int w = initEnergies[0].length;
+        int minPath[] = new int[h];
+        topologicalOrder(initEnergies);
 
-//    // remove horizontal seam from current picture
-//    public void removeHorizontalSeam(int[] seam){}
+        // as we are finding the shortest path from the bottom, find the minimum element
+        // in the last row
+        minPath[h - 1] = 0;
+        for (int i = 0; i < w; i++) {
+            if (initEnergies[h - 1][i] < initEnergies[h - 1][minPath[h - 1]]) {
+                minPath[h - 1] = i;
+            }
+        }
+        for (int row = h - 2; row >= 0; row--) {
+            int column = minPath[row + 1];
+            minPath[row] = column;
+            if (column > 0 && initEnergies[row][column - 1] < initEnergies[row][minPath[row]]) {
+                minPath[row] = column - 1;
+            }
+            if (column < (w - 2) && initEnergies[row][column + 1] < initEnergies[row][minPath[row]]) {
+                minPath[row] = column + 1;
+            }
+        }
+        return minPath;
+    }
 
-//    // remove vertical seam from current picture
-//    public void removeVerticalSeam(int[] seam){}
+    // sequence of indices for vertical seam
+    public int[] findVerticalSeam() {
+        double[][] ene = initialEnergies();
+        return minVerticalPath(ene);
+    }
 
-   //  unit testing (optional)
+    // remove horizontal seam from current picture
+    public void removeHorizontalSeam(int[] seam) {
+        if (seam == null || height() <= 1 || seam.length != width() || seam[0] < 0 || seam[0] > height() - 1) {
+            throw new java.lang.IllegalArgumentException();
+        }
+        for (int i = 0; i < seam.length - 1; i++) {
+            if (seam[i] < 0 || seam[i + 1] < 0 || seam[i] > height() - 1 || seam[i + 1] > width() - 1) {
+                throw new java.lang.IllegalArgumentException();
+            }
+            if (Math.abs(seam[i + 1] - seam[i]) > 1) {
+                throw new java.lang.IllegalArgumentException();
+            }
+        }
+        Picture p = new Picture(width(), height() - 1);
+        for (int wid = 0; wid < width(); wid++) {
+            for (int hei = 0; hei < seam[wid]; hei++) {
+                p.set(wid, hei, pic.get(wid, hei));
+            }
+            for (int hei = seam[wid] + 1; hei < height(); hei++) {
+                p.set(wid, hei - 1, pic.get(wid, hei));
+            }
+        }
+        pic = p;
+    }
+
+    // remove vertical seam from current picture
+    public void removeVerticalSeam(int[] seam) {
+        if (seam == null || width() <= 1 || seam.length != height() || seam[0] < 0 || seam[0] > width() - 1) {
+            throw new java.lang.IllegalArgumentException();
+        }
+        for (int i = 0; i < seam.length - 1; i++) {
+            if (seam[i] < 0 || seam[i + 1] < 0 || seam[i] > width() - 1 || seam[i + 1] > width() - 1) {
+                throw new java.lang.IllegalArgumentException();
+            }
+            if (Math.abs(seam[i + 1] - seam[i]) > 1) {
+                throw new java.lang.IllegalArgumentException();
+            }
+        }
+        Picture p = new Picture(width() - 1, height());
+        for (int hei = 0; hei < height(); hei++) {
+            for (int wid = 0; wid < seam[hei]; wid++) {
+                p.set(wid, hei, pc.get(wid, hei));
+            }
+            for (int wid = seam[hei] + 1; wid < width(); wid++) {
+                p.set(wid - 1, hei, pc.get(wid, hei));
+            }
+        }
+        pc = p;
+    }
+
+    /*
+     * private boolean validPath(int minPath[], int hei, int wid) { if (minPath ==
+     * null) { return false; } if (minPath.length != hei || minPath[0] < 0 ||
+     * minPath[0] > wid) { return false; } for (int i = 1; i < hei; i++) { if
+     * (minPath[i] < Math.max(0,minPath[i-1] - 1) || minPath[i] >
+     * Math.min(wid,minPath[i-1] + 1)) { return false; } } return true; }
+     */
+
+    // unit testing (optional)
     public static void main(String[] args) {
 
-   }
+    }
+
 
 }
