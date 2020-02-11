@@ -1,8 +1,7 @@
-package Boggle;
-
+import edu.princeton.cs.algs4.Queue;
 public class TST<Value> {
     private int n; // size
-    private Node<Value> root; // root of TST
+    public Node<Value> root; // root of TST
 
     private static class Node<Value> {
         private char c; // character
@@ -225,5 +224,19 @@ public class TST<Value> {
         }
         if (c == '.' || c > x.c)
             collect(x.right, prefix, i, pattern, queue);
+    }
+
+    public boolean hasPrefix(String prefix) {
+        Node<Value> n = get(root, prefix, 0);
+        if (n == null) {
+            return false;
+        }
+        if (n.val != null) {
+            return true;
+        }
+        if (n.left == null && n.mid == null && n.right == null) {
+            return false;
+        }
+        return true;
     }
 }
