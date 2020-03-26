@@ -1,11 +1,8 @@
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.TreeMap;
@@ -14,9 +11,9 @@ import java.util.TreeMap;
  * Solution
  */
 public class Solution {
-    Digraph g;
-    HashMap<Integer, String> emailMap = new HashMap<>();
-    HashMap<Integer, ArrayList<Integer>> logsMap = new HashMap<>();
+    private Digraph g;
+    private HashMap<Integer, String> emailMap = new HashMap<>();
+    private HashMap<Integer, ArrayList<Integer>> logsMap = new HashMap<>();
 
     Solution(String fileName, String fileName1) throws IOException {
         parseEmails(fileName);
@@ -92,7 +89,7 @@ public class Solution {
             ArrayList<Integer> value = sortedIn.get(key);
             System.out.println(emailMap.get(value.get(0)) + "," + key);
         }
-        return;
+//         return;
 
     }
 
